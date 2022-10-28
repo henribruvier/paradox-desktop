@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+
+datasource db {
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum GameStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  IN_TIME_OVER
+  FINISHED
+}
+
+model Image {
+  id         Int      @id @default(autoincrement())
+  url        String
+  alt        String
+  Scenario   Scenario @relation(fields: [scenarioId], references: [id])
+  scenarioId Int
+}
+
+model Room {
+  id    Int    @id @default(autoincrement())
+  games Game[]
+}
+
+model Scenario {
+  id             Int        @id @default(autoincrement())
+  title          String
+  description    String
+  bestTime       Int?
+  duration       Int
+  minimumPlayers Int
+  maximumPlayers Int
+  difficulty     Difficulty
+  games          Game[]
+  images         Image[]
+}
+
+model User {
+  id       Int           @id @default(autoincrement())
+  name     String
+  password String
+  role     RoleEnumType? @default(user)
+}
+
+enum RoleEnumType {
+  user
+  admin
+}
+
+model Game {
+  id              Int        @id @default(autoincrement())
+  startDate       DateTime
+  endDate         DateTime
+  numberOfPlayers Int
+  startedAt       DateTime?
+  timeSpent       Int?
+  scenario        Scenario   @relation(references: [id], fields: [scenarioId])
+  scenarioId      Int
+  roomID          Int
+  room            Room       @relation(references: [id], fields: [roomID])
+  status          GameStatus
+}
+
+model Price {
+  id              Int @id @default(autoincrement())
+  price           Int
+  numberOfPlayers Int @unique
+}
+
+model Faq {
+  id       Int    @id @default(autoincrement())
+  question String
+  answer   String
+}
